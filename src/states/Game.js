@@ -4,7 +4,7 @@ import Mushroom from '../sprites/Mushroom'
 import lang from '../lang'
 import { Game } from 'phaser-ce';
 
-export default class extends Phaser.State {
+export default class PacJawsGame extends Phaser.State {
   init() { }
   preload() { }
 
@@ -41,8 +41,6 @@ export default class extends Phaser.State {
 
     let player = game.add.sprite(game.world.centerX, game.world.centerY, 'char')
     player.anchor.set(0.5)
-    let scaleFactor = 1
-    player.scale.set(scaleFactor)
     player.animations.add('om-nom-nom', Phaser.Animation.generateFrameNames('Character', 1, 10, '.png', 2))
     player.animations.play('om-nom-nom', 30, true)
 
@@ -57,19 +55,6 @@ export default class extends Phaser.State {
     this.enemies = game.add.group(game.world, 'enemies')
     this.enemies.enableBody = true
     this.enemies.physicsBodyType = Phaser.Physics.P2JS
-
-    for(let i = 0; i < 10; i++) {
-      let enemy = this.enemies.create(game.world.randomX, game.world.randomY, 'red')
-      enemy.anchor.set(0.5)
-      let scaleFactor = 0.1
-      enemy.scale.set(scaleFactor)
-
-      enemy.body.setCircle(enemy.width / 2)
-      enemy.body.velocity.x = 150
-      enemy.body.velocity.y = 150
-      enemy.body.damping = 0
-      enemy.body.collideWorldBounds = true
-    }
 
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
     this.fullScreenBtn = game.add.button(null, null, 'fullscreen', () => {
@@ -106,6 +91,55 @@ export default class extends Phaser.State {
     let velocity = game.physics.arcade.velocityFromRotation(this.player.rotation, 150)
     this.player.body.velocity.x = velocity.x
     this.player.body.velocity.y = velocity.y
+  }
+
+  spawnPoint (type = PacJawsGame.Types.RED, direction = PacJawsGame.Types.LEFT) {
+    let key
+    let collisionGroup
+    switch (type) {
+      case PacJawsGame.Types.RED:
+        key = 'red'
+        break
+      case PacJawsGame.Types.EMPTY:
+        key = 'empty'
+        break
+      case PacJawsGame.Types.NUMBER:
+        key = 'number'
+      default:
+        break;
+    }
+    let y = 10 + 32
+    let velY = 50
+    let x, velX
+    if (direction === PacJawsGame.Types.LEFT) {
+      x = 32
+      velX = 50
+    } else {
+      x = this.game.width - 32
+      velX = -50
+    }
+
+    let sprite = this.game.add.sprite(x, y, key)
+    sprite.data.type = type
+    this.game.physics.p2.enable(sprite)
+    sprite.body.setCircle(sprite.width / 2)
+    sprite.body.velocity.x = velX
+    sprite.body.velocity.y = velY
+  }
+
+  static get Directions () {
+    return {
+      LEFT: 0,
+      RIGHT: 1
+    }
+  }
+  
+  static get Types () {
+    return {
+      RED: 0,
+      EMPTY: 1,
+      NUMBER: 2
+    }
   }
 
   render () {

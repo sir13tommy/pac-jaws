@@ -20,6 +20,8 @@ export default class extends Phaser.State {
     this.load.atlas('char', 'assets/images/char.png', 'assets/images/char.json')
     this.load.image('fullscreen', 'assets/images/fullscreen.png')
     this.load.image('red', 'assets/images/Red_Ring.png')
+    this.load.image('empty', 'assets/images/Empty_Ring.png')
+    this.load.image('number', 'assets/images/Ring_With_Number.png')
   }
 
   create () {
