@@ -10,14 +10,8 @@ export default class extends Phaser.State {
 
   create(game) {
     game.physics.startSystem(Phaser.Physics.P2JS)
-    game.physics.p2.setImpactEvents(true)
-    
-    //  Create our collision groups. One for the player, one for the pandas
-    var playerCollisionGroup = game.physics.p2.createCollisionGroup();
-    var enemyCollisionGroup = game.physics.p2.createCollisionGroup();
-
-    game.physics.p2.updateBoundsCollisionGroup();
-    
+    game.physics.p2.restitution = 1
+        
     game.input.enabled = true
 
     game.stage.disableVisibilityChange = true
@@ -46,43 +40,35 @@ export default class extends Phaser.State {
     })
 
     let player = game.add.sprite(game.world.centerX, game.world.centerY, 'char')
-    player.baseWidth = player.width
-    player.baseHeight = player.height
     player.anchor.set(0.5)
-    let scaleFactor = 0.1
+    let scaleFactor = 1
     player.scale.set(scaleFactor)
     player.animations.add('om-nom-nom', Phaser.Animation.generateFrameNames('Character', 1, 10, '.png', 2))
     player.animations.play('om-nom-nom', 30, true)
 
     game.physics.p2.enableBody(player)
-    player.body.setCircle(player.baseWidth / 2)
-    player.body.velocity.x = 2
-    player.body.velocity.y = 2
-    player.body.setCollisionGroup(playerCollisionGroup)
-    player.body.collides(enemyCollisionGroup)
+    player.body.setCircle(player.width / 2)
+    player.body.fixedRotation = true
+    player.body.collideWorldBounds = true
 
     this.player = player
 
     // add enemies
-    this.enemies = game.add.group(this.world, 'enemies')
+    this.enemies = game.add.group(game.world, 'enemies')
+    this.enemies.enableBody = true
+    this.enemies.physicsBodyType = Phaser.Physics.P2JS
 
-    for(let i = 0; i < 1; i++) {
-      let enemy = game.add.sprite(game.world.randomX, game.world.randomY, 'red')
-      enemy.baseWidth = enemy.width
-      enemy.baseHeight = enemy.height
+    for(let i = 0; i < 10; i++) {
+      let enemy = this.enemies.create(game.world.randomX, game.world.randomY, 'red')
       enemy.anchor.set(0.5)
       let scaleFactor = 0.1
       enemy.scale.set(scaleFactor)
 
-      game.physics.p2.enable(enemy)
-      enemy.body.setCircle(enemy.baseWidth / 2)
-      enemy.body.velocity.x = 2
-      enemy.body.velocity.y = 2
-      enemy.body.setCollisionGroup(enemyCollisionGroup)
-      enemy.body.collides([enemyCollisionGroup, playerCollisionGroup])
-      enemy.body.damping = 0;
-
-      this.enemies.add(enemy)
+      enemy.body.setCircle(enemy.width / 2)
+      enemy.body.velocity.x = 150
+      enemy.body.velocity.y = 150
+      enemy.body.damping = 0
+      enemy.body.collideWorldBounds = true
     }
 
     game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
@@ -117,17 +103,14 @@ export default class extends Phaser.State {
         this.player.rotation += rotationStep
       }
     }
-    // let velocity = game.physics.arcade.velocityFromRotation(this.player.rotation, 2)
-    // this.player.body.velocity.x = velocity.x
-    // this.player.body.velocity.y = velocity.y
+    let velocity = game.physics.arcade.velocityFromRotation(this.player.rotation, 150)
+    this.player.body.velocity.x = velocity.x
+    this.player.body.velocity.y = velocity.y
   }
 
   render () {
     if (__DEV__) {
-      game.debug.body(this.player);
-      this.enemies.forEach(enemy => {
-        game.debug.body(enemy)
-      })
+      
     }
   }
 }
